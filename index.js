@@ -1,5 +1,6 @@
 const { MongoClient, ServerApiVersion } = require("mongodb");
 const ObjectId = require("mongodb").ObjectId;
+const jwt = require('jsonwebtoken');
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
