@@ -17,27 +17,59 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 
 async function run() {
     try {
-      await client.connect();
-      const taskCollection = client.db("taskTaker").collection("tasks");
-  
-      
-      console.log("connected to database");
-    } 
-    
+        await client.connect();
+        const taskCollection = client.db("taskTaker").collection("tasks");
+        // get all tasks api
+        app.get("/tasks", async (req, res) => {
+            const query = {};
+            const cursor = taskCollection.find(query);
+            const result = await cursor.toArray();
+            res.send(result);
+        });
+
+        // post single task api
+        app.post("/task", async (req, res) => {
+            const data = req.body;
+            const result = await taskCollection.insertOne(data);
+            res.send(result);
+        });
+
+        // update task description api
+        app.put("/task/:id", async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) };
+            const updateDoc = {
+                $set: { role: "complete" },
+            };
+            const result = await taskCollection.updateOne(filter, updateDoc);
+            res.send(result);
+        });
+
+        // delete a task api
+        app.delete("/task/:id", async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) };
+            const result = await taskCollection.deleteOne(filter);
+            res.send(result);
+        });
+
+        console.log("connected to database");
+    }
+
     finally {
 
     }
-  }
-  
-  run().catch(console.dir);
+}
+
+run().catch(console.dir);
 
 
 
 
 app.get("/", (req, res) => {
-  res.send("Welcome to Varila To-Do App Server");
+    res.send("Welcome to Varila To-Do App Server");
 });
 
 app.listen(port, () => {
-  console.log("Listening to the port:", port);
+    console.log("Listening to the port:", port);
 });
