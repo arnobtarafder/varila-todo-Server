@@ -36,6 +36,8 @@ async function run() {
     try {
         await client.connect();
         const taskCollection = client.db("taskTaker").collection("tasks");
+       
+       
         // get all tasks api
         app.get("/tasks", async (req, res) => {
             const query = {};
@@ -45,11 +47,22 @@ async function run() {
         });
 
         // post single task api
-        app.post("/task", async (req, res) => {
+        app.post("/tasks", async (req, res) => {
             const data = req.body;
             const result = await taskCollection.insertOne(data);
             res.send(result);
         });
+
+        app.get("/my-tasks", verifyJWT, async (req, res) => {
+            const decodedEmail = req.decoded.email;
+            const email = req.query.email;
+            if (email === decodedEmail) {
+              const myItems = await taskCollection.find({ email: email }).toArray();
+              res.send(myItems);
+            } else {
+              res.status(403).send({ message: "forbidden access" });
+            }
+          });
 
         // post user login information
         app.post("/login", async (req, res) => {
@@ -60,6 +73,22 @@ async function run() {
             res.send({ accessToken });
           });
 
+
+          app.patch("/tasks/:id", async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) };
+            const updateDoc = {
+              $set: { completed: true },
+            };
+            const result = await taskCollection.updateOne(filter, updateDoc);
+            if (result.acknowledged) {
+              res.send({ success: true, message: "Task completed" });
+            } else {
+              res.send({ success: false, message: "Task is not completed" });
+            }
+          });
+
+        
         // // update task description api
         // app.put("/task/:id", async (req, res) => {
         //     const id = req.params.id;
