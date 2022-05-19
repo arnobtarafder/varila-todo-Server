@@ -51,6 +51,15 @@ async function run() {
             res.send(result);
         });
 
+        // post user login information
+        app.post("/login", async (req, res) => {
+            const user = req.body;
+            const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+              expiresIn: "1d",
+            });
+            res.send({ accessToken });
+          });
+
         // // update task description api
         // app.put("/task/:id", async (req, res) => {
         //     const id = req.params.id;
